@@ -1,65 +1,11 @@
 install new ubuntu server VM1
-**********************************
+*****************************
 in VM1:
-sudo systemctl status ssh >> active 
-sudo apt update >>> running 
+sudo systemctl status ssh >>active 
+sudo apt update           >>running 
 
-1-install network manager then clone VM2 & VM3 
-ip a >>> 192.168.1.9/24 dynamic
-
-2-Install pip
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python get-pip.py --user
-sudo apt install python
-
-3-Install ansible
-sudo apt install software-properties-common
-sudo add-apt-repository --yes --update ppa:ansible/ansible
-<<<<<
-sudo add-apt-repository --update ppa:ansible/ansible
-Enter
->>>>>>
-sudo apt install ansible
-
-4- hosts file
-nano hosts 
->> add
-client1 ansible_host=192.168.1.14 ansible_user=hadeer ansible_password=1234 iti_hostname=os1
-client2 ansible_host=192.168.1.15 ansible_user=hadeer ansible_password=1234 iti_hostname=os2
-
-ansible -i hosts client1 -m ping //to test
-ssh client 
-ssh 192.168.1.14
-yes
-exit
-
-ansible -i hosts client2 -m ping  //to test
-ssh client 
-ssh 192.168.1.15
-yes
-exit or ctrl d
-
-ansible -i hosts all -m ping  //to test
-
-nano renamehosts.yml
---- 
-- name: Rename hosts
-  become: yes
-  hosts: all
-  gather_facts: no
-  tasks: 
-       - name: Rename a host
-         ansible.builtin.hostname:
-                 name: "{{ iti_hostname }}"
-
-       - name: Install apache2
-         ansible.builtin.package:
-                 name: apache2
-                 state: present
-
-ansible-playbook -i hosts renamehosts.yml  //restart VM2 & VM3 
-sudo systemctl status apache2 // active in VM2 & VM3 
-*************************************
+1-install network manager as in lec#3 then clone VM2 & VM3 
+*****************************
 in VM2:
 ip a >>> 192.168.1.12/24 dynamic
 
@@ -81,3 +27,80 @@ sudo nmcli c s   //to check
 ping 4.2.2.2   //to check
 
 ***************************
+in VM1:
+
+2-Install pip
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py --user
+sudo apt install python
+
+3-Install ansible
+sudo apt install software-properties-common
+sudo add-apt-repository --yes --update ppa:ansible/ansible
+{
+  sudo add-apt-repository --update ppa:ansible/ansible
+  Enter
+}
+sudo apt install ansible
+
+4- hosts file
+nano hosts               >>add
+
+client1 ansible_host=192.168.1.14 ansible_user=hadeer ansible_password=1234 ansible_become_password=1234 iti_hostname=os1
+client2 ansible_host=192.168.1.15 ansible_user=hadeer ansible_password=1234 ansible_become_password=1234 iti_hostname=os2
+
+ansible -i hosts client1 -m ping //to test
+{
+ssh client 
+ssh 192.168.1.14
+yes
+exit
+}
+
+ansible -i hosts client2 -m ping  //to test
+{
+ssh client 
+ssh 192.168.1.15
+yes
+exit or ctrl d
+}
+
+ansible -i hosts all -m ping  //to test
+
+nano renamehosts.yml
+--- 
+- name: Rename hosts
+  become: yes
+  hosts: all
+  gather_facts: no
+  tasks: 
+       - name: Rename a host
+         ansible.builtin.hostname:
+                 name: "{{ iti_hostname }}"
+
+       - name: Install apache2
+         ansible.builtin.package:
+                 name: apache2
+                 state: present
+
+ansible-playbook -i hosts renamehosts.yml  //restart VM2 & VM3 
+sudo systemctl status apache2              //active in VM2 & VM3 
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+from this link : 
+https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-wordpress-with-lamp-on-ubuntu-18-04#playbook-yml
+
+cd ~
+git clone https://github.com/do-community/ansible-playbooks.git
+cd ansible-playbooks
+
+ls -l
+cd wordpress-lamp_ubuntu1804
+nano vars/default.yml //to change variables
+
+sudo touch hosts
+client1 ansible_host=192.168.1.14 ansible_user=hadeer ansible_password=1234 ansible_become_password=1234 iti_hostname=os1
+client2 ansible_host=192.168.1.15 ansible_user=hadeer ansible_password=1234 ansible_become_password=1234 iti_hostname=os2
+
+ansible-playbook -i hosts playbook.yml
+*************************************
